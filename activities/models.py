@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from datetime import timedelta
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Activity(models.Model):
     user = models.ForeignKey(
@@ -10,34 +10,51 @@ class Activity(models.Model):
         related_name='activities'
     )
     activity_type = models.CharField(max_length=100)
-    duration = models.DurationField()
-    distance = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    duration_hours = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(99)]
+    )
+    duration_minutes = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(59)]
+    )
+    distance_km = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(999)]
+    )
+    distance_meters = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(999)]  # Max 3 digits for meters
+    )
     calories_burned = models.PositiveIntegerField(null=True, blank=True)
     date = models.DateField()
 
-    def clean(self):
-        if self.duration <= timedelta(0):
-            raise ValidationError({'duration': 'Duration must be a positive value.'})
+    class Meta:
+        verbose_name_plural = "Activities"
 
-        if self.distance is not None and self.distance <= 0:
-            raise ValidationError({'distance': 'Distance must be a positive value.'})
+    def clean(self):
+        if self.duration_hours < 0:
+            raise ValidationError({'duration_hours': 'Hours must be a positive value.'})
+        if self.duration_minutes < 0 or self.duration_minutes >= 60:
+            raise ValidationError({'duration_minutes': 'Minutes must be between 0 and 59.'})
+
+        if self.distance_km < 0:
+            raise ValidationError({'distance_km': 'Kilometers must be a positive value.'})
+        if self.distance_meters < 0 or self.distance_meters >= 1000:
+            raise ValidationError({'distance_meters': 'Meters must be between 0 and 999.'})
 
         if self.calories_burned is not None and self.calories_burned <= 0:
             raise ValidationError({'calories_burned': 'Calories burned must be a positive value.'})
 
     def __str__(self):
-        total_seconds = self.duration.total_seconds()
-        hours, remainder = divmod(total_seconds, 3600)
-        minutes, _ = divmod(remainder, 60)
-        
-        if hours >= 1:
-            time_display = f"{int(hours)} hours {int(minutes)} minutes"
+        if self.duration_hours >= 1:
+            time_display = f"{self.duration_hours} hour{'s' if self.duration_hours != 1 else ''} {self.duration_minutes} minute{'s' if self.duration_minutes != 1 else ''}"
         else:
-            time_display = f"{int(minutes)} minutes"
+            time_display = f"{self.duration_minutes} minute{'s' if self.duration_minutes != 1 else ''}"
 
-        if self.distance is not None:
-            distance_meters = self.distance * 1000
-            distance_display = f"{distance_meters:.2f} meters"
+
+        if self.distance_km > 0 or self.distance_meters > 0:
+            distance_display = f"{self.distance_km} km {self.distance_meters} meters"
         else:
             distance_display = "N/A"
 
