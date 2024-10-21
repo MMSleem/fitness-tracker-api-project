@@ -6,5 +6,5 @@ router = DefaultRouter()
 router.register(r'', ActivityViewSet, basename='activities')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('activities/', include(router.urls)),
 ]
