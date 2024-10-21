@@ -58,11 +58,12 @@ Start the server using python manage.py runserver.
 ### Authentication
 Login: /api/token/ (POST)
 Refresh Token: /api/token/refresh/ (POST)
+
 ### Users
-Create User: /api/users/ (POST)
-Get User: /api/users/<id>/ (GET)
+-Create User: /api/users/ (POST)
+-Get User: /api/users/<id>/ (GET)
 ### Activities
-Create Activity: /api/activities/ (POST)
-List Activities: /api/activities/ (GET)
-Update Activity: /api/activities/<id>/ (PUT)
-Delete Activity: /api/activities/<id>/ (DELETE)
+-Create Activity: /api/activities/ (POST)
+-List Activities: /api/activities/ (GET)
+-Update Activity: /api/activities/<id>/ (PUT)
+-Delete Activity: /api/activities/<id>/ (DELETE)
